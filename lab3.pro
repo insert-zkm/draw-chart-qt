@@ -2,13 +2,16 @@ TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
 
+QT += sql
+
 #HEADERS +=
 
 SOURCES += main.cpp \
-    extractdata.cpp
+    src/extractdata.cpp
 
 HEADERS += \
-    extractdata.h
+    src/extractdata.h
 
 DISTFILES += \
-    README.md
+    README.md \
+    test\data\*
