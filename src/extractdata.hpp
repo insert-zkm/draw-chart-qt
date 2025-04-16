@@ -27,6 +27,7 @@ public:
 class SqlExtract : public IExtractData {
 protected:
     TimeRecord getTimeRecord(const QVariant& vDate, const QVariant& vValue) const;
+    int getRowCount(const QString& tableName) const;
 public:
     virtual TimeSeries exec(const QFileInfo& file) override;
 };

@@ -1,5 +1,5 @@
 #include <QDebug>
-#include "extractdata.hpp";
+#include "extractdata.hpp"
 
 #include <QSqlDatabase>
 #include <QSqlRecord>
@@ -10,13 +10,13 @@
 
 
 int main() {
-    QVariant v(99999999999999);
+    QVariant v("99999999999999");
     bool ok;
-    qDebug() << v << v.canConvert(QMetaType::Int) << v.toUInt(&ok);
+    qDebug() << v << v.canConvert(QMetaType::ULongLong) << v.toULongLong(&ok);
 
     qDebug() << ok;
 
-    return 0;
+//    return 0;
 
     IExtractData* st = new JsonExtract();
 //    QFileInfo f("../draw-chart-qt/test/data/TEMPERATURE_NOVOSIB.sqlite");

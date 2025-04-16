@@ -38,7 +38,7 @@ QJsonArray JsonExtract::getSeries(const QJsonObject &obj) const
     }
     QJsonValue jSeries = obj.value("series");
     if(!jSeries.isArray()) {
-        qDebug() << "Error: invalid json format" << "series must be an array"; // FIXME
+        throw "Invalid json format: 'series' must be an array";
     }
 
     return jSeries.toArray();
@@ -47,13 +47,13 @@ QJsonArray JsonExtract::getSeries(const QJsonObject &obj) const
 TimeRecord JsonExtract::getTimeRecord(const QJsonValue &jsonVal) const
 {
     if(!jsonVal.isObject()) {
-        qWarning() << "Warning: invalid json array element must be object"; // FIXME
+        qWarning() << "Warning: 'series' element must be object";
         return TimeRecord();
     }
 
     QJsonObject obj = jsonVal.toObject();
     if(!isTimeRecord(obj)){
-        qWarning() << "Warning: invalid json object must contain 'time' and 'value' fields"; // FIXME
+        qWarning() << "Warning: 'series' element must contain 'time' and 'value' fields";
         return TimeRecord();
     }
 
@@ -61,12 +61,12 @@ TimeRecord JsonExtract::getTimeRecord(const QJsonValue &jsonVal) const
     QJsonValue jValue = obj.value("value");
 
     bool ok;
-    QString epochTimeStr = jTime.toString();
-    qint64 epochTime = epochTimeStr.toULongLong(&ok);
+    QVariant vEpochTimeStr = jTime.toVariant();
+    qint64 epochTime = vEpochTimeStr.toULongLong(&ok);
     qreal value = jValue.toDouble();
 
     if(!ok) {
-        qWarning() << "Warning: invalid json convertion epoch time"; // FIXME
+        qWarning() << "Warning: conversion 'time' value is not possible to epoch time"; // FIXME
         return TimeRecord();
     }
 
@@ -79,19 +79,19 @@ TimeSeries JsonExtract::exec(const QFileInfo& file)
 {
     QFile f(file.absoluteFilePath());
     if(!f.open(QFile::ReadOnly)) {
-        qDebug() << "Error: cannot open json file"; // FIXME
+        throw "Cannot open JSON file";
     }
     TimeSeries ts;
     QByteArray s = f.readAll();
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(s, &parseError);
     if(doc.isNull() || parseError.error != QJsonParseError::NoError) {
-        qDebug() << "Error: json parse error" << parseError.errorString(); // FIXME
+        throw "JSON parse error " + parseError.errorString();
         return ts;
     }
 
     if(!doc.isObject()) {
-        qDebug() << "Error: invalid json format" << "json document must be an object"; // FIXME
+        throw "Invalid JSON format. Json document must be an object";
         return ts;
     }
 
@@ -99,24 +99,28 @@ TimeSeries JsonExtract::exec(const QFileInfo& file)
     QJsonArray jsonTimeSeries = getSeries(rootObj);
     setLabels(rootObj, ts);
 
-    for(auto it = jsonTimeSeries.cbegin(); it != jsonTimeSeries.cend(); it++) {
-        ts.data << getTimeRecord((*it));
+    try {
+        for(auto it = jsonTimeSeries.cbegin(); it != jsonTimeSeries.cend(); it++) {
+            ts.data << getTimeRecord((*it));
+        }
+    } catch(std::bad_alloc& baError) {
+        qWarning() << "Warning: too much data. List bad allocation";
     }
-//    qDebug() << "ts: " << &ts << " ts.data: " << &(ts.data);
+
     return ts;
 }
 
 TimeRecord SqlExtract::getTimeRecord(const QVariant &vDate, const QVariant &vValue) const
 {
     if(!vDate.canConvert(QMetaType::QString) || !vValue.canConvert(QMetaType::QReal)) {
-        qDebug() << "Error: wrong types"; // FIXME
+        throw "SQLITE Wrong types. Date must be string and value must be real";
     }
 
     QDateTime dt = QDateTime::fromString(vDate.toString(), "dd.MM.yyyy hh:mm");
     dt.setTimeSpec(Qt::UTC);
 
     if(!dt.isValid()) {
-        qDebug() << "Error: invalid datetime format" << vDate.toString(); // FIXME
+        throw "SQLITE Invalid datetime format: " + vDate.toString(); // FIXME
     }
 
     return TimeRecord(dt, vValue.toReal());
@@ -143,7 +147,7 @@ TimeSeries SqlExtract::exec(const QFileInfo& file)
     db.setConnectOptions("QSQLITE_OPEN_READONLY");
 
     if(!db.open()) {
-        qDebug() << "Error: cannot open sqlite file" << db.lastError().text(); // FIXME
+        throw "Cannot open SQLITE file: " + db.lastError().text();
     }
 
     QStringList tables = db.tables();
@@ -155,14 +159,12 @@ TimeSeries SqlExtract::exec(const QFileInfo& file)
     QSqlRecord record = db.record(tableName);
 
     if(record.count() < 2) {
-        qDebug() << "Error: not enough info to build a graph"; // FIXME
+        throw "SQLITE Not enough columns to build a graph";
     }
 
     QString col1 = record.fieldName(0), col2 = record.fieldName(1);
     QString queryString = QString("SELECT %1, %2 FROM %3")
-                              .arg(col1)
-                              .arg(col2)
-                              .arg(tableName);
+                              .arg(col1, col2, tableName);
     QSqlQuery queryAllRecords(queryString);
 
     int rowCount = getRowCount(tableName);
