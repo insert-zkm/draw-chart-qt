@@ -14,15 +14,71 @@
 #include <QDebug>
 #include <QVariant>
 
+#define DEFAULT_XLABEL "time"
+#define DEFAULT_YLABEL "value"
+
 bool JsonExtract::isTimeRecord(const QJsonObject &tr) const
 {
-
     return tr.contains("time") && tr.contains("value"); // FIXME: hardcoded field names
 }
 
+void JsonExtract::setLabels(const QJsonObject &obj, TimeSeries &ts) const
+{
+    QJsonValue jXLabel = obj.value("xLabel");
+    QJsonValue jYLabel = obj.value("yLabel");
+
+    QString xLabel = jXLabel.toString(QString(DEFAULT_XLABEL)); // FIXME: set to ts
+    QString yLabel = jYLabel.toString(QString(DEFAULT_YLABEL)); // FIXME: set to ts
+
+    qDebug() << xLabel << yLabel;
+}
+
+QJsonArray JsonExtract::getSeries(const QJsonObject &obj) const
+{
+    if(!obj.contains("series")) {
+        qDebug() << "Warning: no series field in object. By default its gonna be empty array";
+    }
+    QJsonValue jSeries = obj.value("series");
+    if(!jSeries.isArray()) {
+        qDebug() << "Error: invalid json format" << "series must be an array"; // FIXME
+    }
+
+    return jSeries.toArray();
+}
+
+TimeRecord JsonExtract::getTimeRecord(const QJsonValue &jsonVal) const
+{
+    if(!jsonVal.isObject()) {
+        qWarning() << "Warning: invalid json array element must be object"; // FIXME
+        return TimeRecord();
+    }
+
+    QJsonObject obj = jsonVal.toObject();
+    if(!isTimeRecord(obj)){
+        qWarning() << "Warning: invalid json object must contain 'time' and 'value' fields"; // FIXME
+        return TimeRecord();
+    }
+
+    QJsonValue jTime = obj.value("time");
+    QJsonValue jValue = obj.value("value");
+
+    bool ok;
+    QString epochTimeStr = jTime.toString();
+    qint64 epochTime = epochTimeStr.toULongLong(&ok);
+    qreal value = jValue.toDouble();
+
+    if(!ok) {
+        qWarning() << "Warning: invalid json convertion epoch time"; // FIXME
+        return TimeRecord();
+    }
+
+    return TimeRecord(QDateTime::fromSecsSinceEpoch(epochTime), value);
+}
+
+
+
 TimeSeries JsonExtract::exec(const QFileInfo& file)
 {
-
     QFile f(file.absoluteFilePath());
     if(!f.open(QFile::ReadOnly)) {
         qDebug() << "Error: cannot open json file"; // FIXME
@@ -31,26 +87,23 @@ TimeSeries JsonExtract::exec(const QFileInfo& file)
     QByteArray s = f.readAll();
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(s, &parseError);
-    if(doc.isNull()) {
+    if(doc.isNull() || parseError.error != QJsonParseError::NoError) {
         qDebug() << "Error: json parse error" << parseError.errorString(); // FIXME
         return ts;
     }
 
-    if(!doc.isArray()) {
-        qDebug() << "Error: invalid json format" << "json document must be an array"; // FIXME
+    if(!doc.isObject()) {
+        qDebug() << "Error: invalid json format" << "json document must be an object"; // FIXME
         return ts;
     }
 
-    QJsonArray jsonTimeSeries = doc.array();
-    for(auto it = jsonTimeSeries.cbegin(); it != jsonTimeSeries.cend(); it++) {
-        if(it->isObject()) {
-            QJsonObject obj = it->toObject();
-            if(isTimeRecord(obj)){
-                ts << TimeRecord();
-            }
-        }
-    }
+    QJsonObject rootObj = doc.object();
+    QJsonArray jsonTimeSeries = getSeries(rootObj);
+    setLabels(rootObj, ts);
 
+    for(auto it = jsonTimeSeries.cbegin(); it != jsonTimeSeries.cend(); it++) {
+        ts << getTimeRecord((*it));
+    }
 
     return ts;
 }
