@@ -1,4 +1,4 @@
-#include "extractdata.h"
+#include "extractdata.hpp"
 
 #include <QSqlDatabase>
 #include <QSqlRecord>
@@ -27,10 +27,8 @@ void JsonExtract::setLabels(const QJsonObject &obj, TimeSeries &ts) const
     QJsonValue jXLabel = obj.value("xLabel");
     QJsonValue jYLabel = obj.value("yLabel");
 
-    QString xLabel = jXLabel.toString(QString(DEFAULT_XLABEL)); // FIXME: set to ts
-    QString yLabel = jYLabel.toString(QString(DEFAULT_YLABEL)); // FIXME: set to ts
-
-    qDebug() << xLabel << yLabel;
+    ts.xLabel = jXLabel.toString(QString(DEFAULT_XLABEL));
+    ts.yLabel = jYLabel.toString(QString(DEFAULT_YLABEL));
 }
 
 QJsonArray JsonExtract::getSeries(const QJsonObject &obj) const
@@ -102,10 +100,40 @@ TimeSeries JsonExtract::exec(const QFileInfo& file)
     setLabels(rootObj, ts);
 
     for(auto it = jsonTimeSeries.cbegin(); it != jsonTimeSeries.cend(); it++) {
-        ts << getTimeRecord((*it));
+        ts.data << getTimeRecord((*it));
+    }
+//    qDebug() << "ts: " << &ts << " ts.data: " << &(ts.data);
+    return ts;
+}
+
+TimeRecord SqlExtract::getTimeRecord(const QVariant &vDate, const QVariant &vValue) const
+{
+    if(!vDate.canConvert(QMetaType::QString) || !vValue.canConvert(QMetaType::QReal)) {
+        qDebug() << "Error: wrong types"; // FIXME
     }
 
-    return ts;
+    QDateTime dt = QDateTime::fromString(vDate.toString(), "dd.MM.yyyy hh:mm");
+    dt.setTimeSpec(Qt::UTC);
+
+    if(!dt.isValid()) {
+        qDebug() << "Error: invalid datetime format" << vDate.toString(); // FIXME
+    }
+
+    return TimeRecord(dt, vValue.toReal());
+}
+
+int SqlExtract::getRowCount(const QString &tableName) const
+{
+    QSqlQuery queryRowCount(
+        QString("SELECT Count(*) FROM %1").arg(tableName));
+
+    int rowCount = 0;
+    bool ok = false;
+    if(queryRowCount.next()) {
+        int val = queryRowCount.value(0).toInt(&ok);
+        rowCount = (ok ? val : 0); // FIXME
+    }
+    return rowCount;
 }
 
 TimeSeries SqlExtract::exec(const QFileInfo& file)
@@ -120,7 +148,7 @@ TimeSeries SqlExtract::exec(const QFileInfo& file)
 
     QStringList tables = db.tables();
     if(tables.isEmpty()) {
-        qWarning() << "Warning: data in sqlite db";
+        qWarning() << "Warning: no tables in sqlite db";
         return TimeSeries();
     }
     QString tableName = tables.first();
@@ -135,37 +163,22 @@ TimeSeries SqlExtract::exec(const QFileInfo& file)
                               .arg(col1)
                               .arg(col2)
                               .arg(tableName);
-    QString queryRowCountString = QString("SELECT Count(*) FROM %1").arg(tableName);
     QSqlQuery queryAllRecords(queryString);
-    QSqlQuery queryRowCount(queryRowCountString);
 
-    int rowCount = 0;
-    bool ok = false;
-    if(queryRowCount.next()) {
-        int val = queryRowCount.value(0).toInt(&ok);
-        rowCount = (ok ? val : 0); // FIXME
-    }
-
+    int rowCount = getRowCount(tableName);
     TimeSeries ts;
-    ts.reserve(rowCount);
+    ts.data.reserve(rowCount);
+    ts.xLabel = col1;
+    ts.yLabel = col2;
 
-
-    while(queryAllRecords.next()) {
-        QVariant vDateStr = queryAllRecords.value(col1);
-        QVariant vValue = queryAllRecords.value(col2);
-
-        if(!vDateStr.canConvert(QMetaType::QString) || !vValue.canConvert(QMetaType::QReal)) {
-            qDebug() << "Error: wrong types"; // FIXME
+    try {
+        while(queryAllRecords.next()) {
+            ts.data << getTimeRecord(
+                queryAllRecords.value(col1),
+                queryAllRecords.value(col2));
         }
-
-        QDateTime dt = QDateTime::fromString(vDateStr.toString(), "dd.MM.yyyy hh:mm");
-        dt.setTimeSpec(Qt::UTC);
-
-        if(!dt.isValid()) {
-            qDebug() << "Error: invalid time format" << vDateStr.toString(); // FIXME
-        }
-
-        ts << TimeRecord(dt, vValue.toReal());
+    } catch(std::bad_alloc& baError) {
+        qWarning() << "Warning: too much data. List bad allocation";
     }
 
     return ts;

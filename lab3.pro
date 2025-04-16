@@ -5,12 +5,14 @@ CONFIG -= app_bundle
 QT += sql
 
 #HEADERS +=
+INCLUDEPATH += src/
 
 SOURCES += main.cpp \
     src/extractdata.cpp
 
 HEADERS += \
-    src/extractdata.h
+    src/extractdata.hpp \
+    src/timeseries.hpp
 
 DISTFILES += \
     README.md \
