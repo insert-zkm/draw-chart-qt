@@ -1,35 +1,12 @@
-#include <QDebug>
-#include "extractdata.hpp"
+#include <QApplication>>
 
-#include <QSqlDatabase>
-#include <QSqlRecord>
-#include <QSqlQuery>
-#include <QSqlError>
+#include "win.hpp"
 
-#include <QFileInfo>
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
 
+    Win w;
+    w.show();
 
-int main() {
-    QVariant v("99999999999999");
-    bool ok;
-    qDebug() << v << v.canConvert(QMetaType::ULongLong) << v.toULongLong(&ok);
-
-    qDebug() << ok;
-
-//    return 0;
-
-    IExtractData* st = new JsonExtract();
-//    QFileInfo f("../draw-chart-qt/test/data/TEMPERATURE_NOVOSIB.sqlite");
-    QFileInfo f("../draw-chart-qt/test/data/some.json");
-
-    TimeSeries a = st->exec(f);
-//    qDebug() << "ts: " << &a << " ts.data: " << &(a.data);
-
-    for(auto it = a.data.begin(); it != a.data.end(); it++) {
-//        qDebug() << (*it);
-    }
-
-    delete st;
-    QChart
-    return 0;
+    return app.exec();
 }
