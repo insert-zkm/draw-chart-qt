@@ -2,34 +2,43 @@
 #define EXTRACTDATA_H
 
 #include <QFileInfo>
+#include <memory>
 
-#include "timeseries.hpp"
+#include "chartdata.hpp"
+#include "parse.hpp"
 
-class IExtractData
+using namespace std;
+
+class ExtractData
 {
+protected:
+    shared_ptr<Parse> _p;
 public:
-    virtual TimeSeries exec(const QFileInfo& file) = 0;
-    virtual ~IExtractData() = default;
+    ExtractData(shared_ptr<Parse> p) : _p(p) {}
+    virtual shared_ptr<ChartData> exec(const QFileInfo& file) const = 0;
+    virtual ~ExtractData() = default;
 };
 
 
-class JsonExtract : public IExtractData {
+class JsonExtract : public ExtractData {
 protected:
     bool isTimeRecord(const QJsonObject& tr) const;
-    void setLabels(const QJsonObject& obj, TimeSeries& ts) const;
+    void setLabels(const QJsonObject& obj, shared_ptr<ChartData>& ts) const;
     QJsonArray getSeries(const QJsonObject& obj) const;
     TimeRecord getTimeRecord(const QJsonValue& jsonValue) const;
 
 public:
-    virtual TimeSeries exec(const QFileInfo& file) override;
+    JsonExtract(shared_ptr<Parse> p) : ExtractData(p) {}
+    virtual shared_ptr<ChartData> exec(const QFileInfo& file) const override;
 };
 
-class SqlExtract : public IExtractData {
+class SqlExtract : public ExtractData {
 protected:
     TimeRecord getTimeRecord(const QVariant& vDate, const QVariant& vValue) const;
     int getRowCount(const QString& tableName) const;
 public:
-    virtual TimeSeries exec(const QFileInfo& file) override;
+    SqlExtract(shared_ptr<Parse> p) : ExtractData(p) {}
+    virtual shared_ptr<ChartData> exec(const QFileInfo& file) const override;
 };
 
 

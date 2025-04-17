@@ -30,6 +30,6 @@ int main() {
     }
 
     delete st;
-
+    QChart
     return 0;
 }
