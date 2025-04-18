@@ -1,18 +1,34 @@
 #ifndef WIN_H
 #define WIN_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QComboBox>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
 
-class Win : public QWidget
+#include "filesystemwidget.hpp"
+#include "chartwidget.hpp"
+
+class Win : public QMainWindow
 {
     Q_OBJECT
 public:
-    Win(QWidget* parent = nullptr);
+    Win();
+
 protected:
     void fillComboBoxes();
+    void createMenus();
+    void createActions();
 
-    QComboBox* dataTypeCB;
+protected:
+    FileSystemWidget* fs;
+    ChartWidget* ch;
+
+    QMenu *fileMenu;
+    QAction* openAct;
+    QAction* printAct;
+    QAction* exitAct;
 };
 
 #endif // WIN_H
