@@ -7,9 +7,12 @@
 #include <QSizePolicy>
 #include <QDebug>
 #include <QFileDialog>
+#include <QHeaderView>
+#include <QAbstractItemView>
+#include <QHeaderView>
 
 
-QStringList files = {"*.sqlite", "*.json"};
+QStringList filesFilter = {"*.sqlite", "*.json"};
 
 FileSystemWidget::FileSystemWidget()
 {
@@ -17,22 +20,31 @@ FileSystemWidget::FileSystemWidget()
     l1->addWidget(new QLabel("Выбор файла с данными"));
 
     fileModel = new FileTableModel(this);
-    fileModel->newFiles(QDir::current());
     tv = new QTableView();
     tv->setModel(fileModel);
-    qDebug() << tv->rootIndex();
+    tv->verticalHeader()->hide();
+    QHeaderView *headerView = tv->horizontalHeader();
+    headerView->setSectionResizeMode(0, QHeaderView::Stretch);
+    headerView->setSectionResizeMode(1, QHeaderView::Interactive);
+    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     l1->addWidget(tv);
 }
 
 void FileSystemWidget::open()
 {
-    QString dir = QFileDialog::getExistingDirectory(
+    QString dirPath = QFileDialog::getExistingDirectory(
         this,
         "Открыть папку",
         QDir::homePath(),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
+    QDir dir(dirPath);
+    dir.setNameFilters(filesFilter);
+    if(dir.isEmpty()) {
+        // message box
+    }
+    fileModel->newFiles(dir);
 
-//    tv->setRootIndex(dir);
+    // set connections
 }

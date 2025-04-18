@@ -29,7 +29,7 @@ Win::Win()
     l1->addWidget(new QLabel());
     l1->addWidget(fs);
 
-    statusBar()->showMessage("");
+    statusBar()->showMessage("Выберите папку для начала работы");
     widget->setLayout(l1);
 
     createActions();

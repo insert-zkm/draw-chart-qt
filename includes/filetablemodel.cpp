@@ -24,8 +24,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDirIterator>
-
-using namespace std;
+#include <QLocale>
 
 FileTableModel::FileTableModel(QObject* parent) :
     QAbstractTableModel(parent)
@@ -38,7 +37,7 @@ int FileTableModel::rowCount(const QModelIndex& parent) const
 
 int FileTableModel::columnCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : 3;
+    return parent.isValid() ? 0 : 2;
 }
 
 QVariant FileTableModel::data(const QModelIndex& index, int role) const
@@ -56,9 +55,8 @@ QVariant FileTableModel::data(const QModelIndex& index, int role) const
         case 0:
             return file.fileName();
         case 1:
-            return file.filePath();
-        case 2:
-            return file.size();
+            QLocale l;
+            return l.formattedDataSize(file.size());
         }
     }
 
@@ -74,8 +72,6 @@ QVariant FileTableModel::headerData(int section, Qt::Orientation orientation, in
         case 0:
             return tr("File name");
         case 1:
-            return tr("Path");
-        case 2:
             return tr("Size");
         }
     }
@@ -90,5 +86,11 @@ void FileTableModel::newFiles(const QDir& dir) {
         if(fi.isFile())
             files << fi.absoluteFilePath();
     }
-//    emit layoutChanged();
+    emit layoutChanged();
+}
+
+void FileTableModel::clear()
+{
+    files.clear();
+    emit layoutChanged();
 }
