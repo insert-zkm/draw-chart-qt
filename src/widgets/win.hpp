@@ -17,7 +17,6 @@ public:
     Win();
 
 protected:
-    void fillComboBoxes();
     void createMenus();
     void createActions();
 

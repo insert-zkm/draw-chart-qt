@@ -15,14 +15,14 @@ shared_ptr<ChartData> JsonExtract::exec(const QFileInfo& file) const
 {
     QFile f(file.absoluteFilePath());
     if(!f.open(QFile::ReadOnly)) {
-        throw "Cannot open JSON file";
+        throw QString("Cannot open JSON file");
     }
 
     QByteArray s = f.readAll();
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(s, &parseError);
     if(doc.isNull() || parseError.error != QJsonParseError::NoError) {
-        throw "JSON parse error " + parseError.errorString();
+        throw QString("JSON parse error " + parseError.errorString());
     }
 
     return _p->parseJson(doc);
@@ -36,7 +36,7 @@ shared_ptr<ChartData> SqlExtract::exec(const QFileInfo& file) const
     db.setConnectOptions("QSQLITE_OPEN_READONLY");
 
     if(!db.open()) {
-        throw "Cannot open SQLITE file: " + db.lastError().text();
+        throw QString("Cannot open SQLITE file: " + db.lastError().text());
     }
 
 

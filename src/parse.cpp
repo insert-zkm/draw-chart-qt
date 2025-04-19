@@ -24,7 +24,7 @@ shared_ptr<ChartData> TimeValueDataParse::parseSql(const QSqlDatabase &db) const
     QSqlRecord record = db.record(tableName);
 
     if(record.count() < 2) {
-        throw "SQLITE Not enough columns to build a graph";
+        throw QString("SQLITE Not enough columns to build a graph");
     }
 
     QString col1 = record.fieldName(0), col2 = record.fieldName(1);
@@ -54,7 +54,7 @@ shared_ptr<ChartData> TimeValueDataParse::parseSql(const QSqlDatabase &db) const
 shared_ptr<ChartData> TimeValueDataParse::parseJson(const QJsonDocument &doc) const
 {
     if(!doc.isObject()) {
-        throw "Invalid JSON format. Json document must be an object";
+        throw QString("Invalid JSON format. Json document must be an object");
     }
 
     shared_ptr<TimeValueData> ts;
@@ -86,14 +86,14 @@ shared_ptr<ChartData> TimeValueDataParse::parseJson(const QJsonDocument &doc) co
 TimeRecord TimeValueDataParse::getTimeRecord(const QVariant &vDate, const QVariant &vValue) const
 {
     if(!vDate.canConvert(QMetaType::QString) || !vValue.canConvert(QMetaType::QReal)) {
-        throw "SQLITE Wrong types. Date must be string and value must be real";
+        throw QString("SQLITE Wrong types. Date must be string and value must be real");
     }
 
     QDateTime dt = QDateTime::fromString(vDate.toString(), "dd.MM.yyyy hh:mm");
     dt.setTimeSpec(Qt::UTC);
 
     if(!dt.isValid()) {
-        throw "SQLITE Invalid datetime format: " + vDate.toString(); // FIXME
+        throw QString("SQLITE Invalid datetime format: " + vDate.toString()); // FIXME
     }
 
     return TimeRecord(dt, vValue.toReal());
@@ -135,7 +135,7 @@ QJsonArray TimeValueDataParse::getSeries(const QJsonObject &obj) const
     }
     QJsonValue jSeries = obj.value("series");
     if(!jSeries.isArray()) {
-        throw "Invalid json format: 'series' must be an array";
+        throw QString("Invalid json format: 'series' must be an array");
     }
 
     return jSeries.toArray();

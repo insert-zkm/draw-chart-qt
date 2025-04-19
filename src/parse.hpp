@@ -14,6 +14,7 @@ class Parse
 public:
     virtual shared_ptr<ChartData> parseSql(const QSqlDatabase& db) const = 0;
     virtual shared_ptr<ChartData> parseJson(const QJsonDocument& doc) const = 0;
+    virtual ~Parse() = default;
 };
 
 class TimeValueDataParse : public Parse

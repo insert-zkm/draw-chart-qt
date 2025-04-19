@@ -16,7 +16,7 @@ protected:
 public:
     ExtractData(shared_ptr<Parse> p) : _p(p) {}
     virtual shared_ptr<ChartData> exec(const QFileInfo& file) const = 0;
-    virtual ~ExtractData() = default;
+    virtual ~ExtractData() {};
 };
 
 

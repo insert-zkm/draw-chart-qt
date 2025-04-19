@@ -25,28 +25,28 @@ Win::Win()
     this->resize(600, 600);
 
     fs = new FileSystemWidget();
-    QVBoxLayout *l1 = new QVBoxLayout();
-    l1->addWidget(new QLabel());
-    l1->addWidget(fs);
+    ch = new ChartWidget();
+
+    QVBoxLayout *leftLayout = new QVBoxLayout();
+    leftLayout->addWidget(fs);
+
+    QVBoxLayout *rightLayout = new QVBoxLayout();
+    rightLayout->addWidget(ch);
+
+    QHBoxLayout *rootLayout = new QHBoxLayout();
+    rootLayout->addLayout(leftLayout);
+    rootLayout->addLayout(rightLayout);
+
+    widget->setLayout(rootLayout);
 
     statusBar()->showMessage("Выберите папку для начала работы");
-    widget->setLayout(l1);
 
     createActions();
     createMenus();
+
+    connect(fs, &FileSystemWidget::selectedFile, ch, &ChartWidget::drawChart);
 }
 
-/*
- * void Win::fillComboBoxes() { NOTE: usage of SeparatorComboBox
-    dataTypeCB->addParentItem("Time Series");
-    dataTypeCB->addChildItem("Line chart", 1);
-    dataTypeCB->addChildItem("Histogram chart", 2);
-
-    dataTypeCB->addParentItem("XY Series");
-    dataTypeCB->addChildItem("Line chart", 1);
-
-    dataTypeCB->setCurrentIndex(1);
-} */
 
 void Win::createMenus()
 {
@@ -63,6 +63,11 @@ void Win::createActions()
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip("Открыть существующую папку");
     connect(openAct, &QAction::triggered, fs, &FileSystemWidget::open);
+
+    printAct = new QAction("Печать...", this);
+    printAct->setShortcuts(QKeySequence::Print);
+    printAct->setStatusTip("Открыть существующую папку");
+//    connect(printAct, &QAction::triggered, fs, &FileSystemWidget::open); TODO
 
     exitAct = new QAction("Выход", this);
     exitAct->setShortcuts(QKeySequence::Quit);

@@ -94,3 +94,8 @@ void FileTableModel::clear()
     files.clear();
     emit layoutChanged();
 }
+
+QFileInfo FileTableModel::fileInfo(const int row) const
+{
+    return QFileInfo(files[row]);
+}

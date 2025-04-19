@@ -7,6 +7,6 @@ int main(int argc, char* argv[]) {
 
     Win w;
     w.show();
-
+    Qt::WA_DeleteOnClose;
     return app.exec();
 }

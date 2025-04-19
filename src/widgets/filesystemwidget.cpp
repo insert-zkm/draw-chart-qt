@@ -27,8 +27,11 @@ FileSystemWidget::FileSystemWidget()
     headerView->setSectionResizeMode(0, QHeaderView::Stretch);
     headerView->setSectionResizeMode(1, QHeaderView::Interactive);
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tv->setSelectionMode(QAbstractItemView::SingleSelection);
 
     l1->addWidget(tv);
+
+    connect(tv, &QTableView::activated, this,  &FileSystemWidget::modelItemActivated);
 }
 
 void FileSystemWidget::open()
@@ -42,9 +45,11 @@ void FileSystemWidget::open()
     QDir dir(dirPath);
     dir.setNameFilters(filesFilter);
     if(dir.isEmpty()) {
-        // message box
+        // FIXME message box
     }
     fileModel->newFiles(dir);
+}
 
-    // set connections
+void FileSystemWidget::modelItemActivated(const QModelIndex& current) const {
+    emit selectedFile(fileModel->fileInfo(current.row()));
 }
