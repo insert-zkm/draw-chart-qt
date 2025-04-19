@@ -6,21 +6,32 @@
 #include <QList>
 #include <QString>
 #include <QPointF>
+#include <algorithm>
 
 typedef QPair<QDateTime, qreal> TimeRecord;
 typedef QPointF CoordRecord;
 
-struct ChartData {
+class ChartData {
+public:
     QString xLabel;
     QString yLabel;
+    virtual void sort() = 0;
+    virtual ~ChartData() = default;
 };
 
-struct TimeValueData : public ChartData {
+class TimeValueData : public ChartData {
+public:
     QList<TimeRecord> data;
+    virtual void sort() override {
+        std::sort(data.begin(), data.end(), [](const TimeRecord& a, const TimeRecord& b) {
+            return a.first < b.first;
+        });
+    }
 };
 
-struct CoordsData : public ChartData {
-    QList<TimeRecord> data;
+class CoordsData : public ChartData {
+public:
+    QList<CoordRecord> data;
 };
 
 #endif // CHARTDATA_H

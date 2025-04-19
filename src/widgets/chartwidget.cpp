@@ -1,6 +1,7 @@
 #include "chartwidget.hpp"
 
 #include <QComboBox>
+#include <QGraphicsEffect>
 
 #include "parse.hpp"
 #include "chartdata.hpp"
@@ -26,6 +27,11 @@ ChartWidget::ChartWidget(QWidget *parent)
     ch = new QChart();
     cv = new QChartView(ch);
 
+    QGraphicsColorizeEffect *graphicsEffect = new QGraphicsColorizeEffect;
+    graphicsEffect->setColor(Qt::black);
+    graphicsEffect->setEnabled(false);
+    ch->setGraphicsEffect(graphicsEffect);
+
     l1->addLayout(l2);
     l1->addWidget(cv);
 
@@ -33,6 +39,8 @@ ChartWidget::ChartWidget(QWidget *parent)
 
     QObject::connect(chartTypeCB, QOverload<int>::of(&QComboBox::activated),
             this, &ChartWidget::activatedChartType);
+    QObject::connect(styleCB, QOverload<int>::of(&QComboBox::activated),
+                     this, &ChartWidget::activatedChartTheme);
 }
 
 void ChartWidget::fillComboBoxes() {
@@ -46,6 +54,10 @@ void ChartWidget::fillComboBoxes() {
     chartTypeCB->setCurrentIndex(1);
     container->registerInstance<Parse, TimeValueDataParse>();
     container->registerInstance<MyCharts::Chart, MyCharts::TimeValueLine>();
+
+    styleCB->addItem("light", QChart::ChartThemeLight);
+    styleCB->addItem("dark", QChart::ChartThemeDark);
+    styleCB->addItem("HighContrast", QChart::ChartThemeHighContrast);
 }
 
 void ChartWidget::drawChart(const QFileInfo &fi) {
@@ -55,23 +67,31 @@ void ChartWidget::drawChart(const QFileInfo &fi) {
     shared_ptr<MyCharts::Chart> seriesCreator = container->resolve<MyCharts::Chart>();
 
     shared_ptr<ChartData> data;
-    qDebug() << "fuck";
     try {
         data = extractor->exec(fi);
     } catch(const exception& e) {
         qDebug() << e.what();
     } catch(const QString& e) {
-        qDebug() << "s" << e;
+        QMessageBox::critical(this,
+                              "Error",
+                              e);
+        clearChart();
+        return;
     }
 
-    QAbstractSeries* chartSeries = seriesCreator->create(data);
-    ch->removeAllSeries();
-    ch->addSeries(chartSeries);
+    clearChart();
+    QAbstractSeries* chartSeries = seriesCreator->create(data, ch);
 }
 
 void ChartWidget::activatedChartType(int index) {
     ChartType type = static_cast<ChartType>(chartTypeCB->itemData(index).toInt());
     changeContainerChartType(type);
+}
+
+void ChartWidget::activatedChartTheme(int index)  {
+//    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(chartTypeCB->itemData(index).toInt());
+//    cv->chart()->setTheme(theme);
+    cv->chart()->graphicsEffect()->setEnabled(true);
 }
 
 void ChartWidget::changeContainerChartType(const ChartType& chtype) {
@@ -99,5 +119,13 @@ void ChartWidget::changeContainerFileExtractor(const QString &fileType)
         container->registerFactory<ExtractData, JsonExtract, Parse>();
     } else {
         qWarning() << "Unknown file type";
+    }
+}
+
+void ChartWidget::clearChart() {
+    ch->removeAllSeries();
+    auto axis = ch->axes();
+    for(auto it = axis.begin(); it != axis.end(); it++) {
+        ch->removeAxis((*it));
     }
 }

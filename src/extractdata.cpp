@@ -38,7 +38,8 @@ shared_ptr<ChartData> SqlExtract::exec(const QFileInfo& file) const
     if(!db.open()) {
         throw QString("Cannot open SQLITE file: " + db.lastError().text());
     }
+    auto res = _p->parseSql(db);
+    db.close();
 
-
-    return _p->parseSql(db);
+    return res;
 }

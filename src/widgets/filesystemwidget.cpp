@@ -11,7 +11,6 @@
 #include <QAbstractItemView>
 #include <QHeaderView>
 
-
 QStringList filesFilter = {"*.sqlite", "*.json"};
 
 FileSystemWidget::FileSystemWidget()
@@ -20,6 +19,9 @@ FileSystemWidget::FileSystemWidget()
     l1->addWidget(new QLabel("Выбор файла с данными"));
 
     fileModel = new FileTableModel(this);
+
+    fileModel->newFiles(QDir("../draw-chart-qt/test/data/"));
+
     tv = new QTableView();
     tv->setModel(fileModel);
     tv->verticalHeader()->hide();

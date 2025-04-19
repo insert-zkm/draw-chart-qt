@@ -36,6 +36,8 @@ public slots:
 
     void activatedChartType(int index);
 
+    void activatedChartTheme(int index);
+
 protected:
     void changeContainerChartType(const ChartType &chtype);
     void changeContainerFileExtractor(const QString& fileType);
@@ -48,6 +50,7 @@ protected:
     SeparatorComboBox* chartTypeCB;
     SeparatorComboBox* styleCB;
     unique_ptr<ioc::Container> container;
+    void clearChart();
 };
 
 #endif // CHARTWIDGET_H

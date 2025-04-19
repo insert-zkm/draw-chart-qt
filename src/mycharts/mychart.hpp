@@ -2,6 +2,7 @@
 #define MYCHART_H
 
 #include <QAbstractSeries>
+#include <QChart>
 
 #include <memory>
 
@@ -14,25 +15,25 @@ namespace MyCharts {
 class Chart
 {
 public:
-    virtual QAbstractSeries* create(shared_ptr<ChartData> data) const = 0;
+    virtual QAbstractSeries* create(shared_ptr<ChartData> data, QChart* ch) const = 0;
 };
 
 class TimeValueChart : public Chart
 {
 public:
-    virtual QAbstractSeries* create(shared_ptr<ChartData> data) const = 0;
+    virtual QAbstractSeries* create(shared_ptr<ChartData> data, QChart* ch) const = 0;
 };
 
 class TimeValueLine : public TimeValueChart
 {
 public:
-    virtual QAbstractSeries* create(shared_ptr<ChartData> data) const override;
+    virtual QAbstractSeries* create(shared_ptr<ChartData> data, QChart* ch) const override;
 };
 
 class TimeValueHistogram : public TimeValueChart
 {
 public:
-    virtual QAbstractSeries* create(shared_ptr<ChartData> data) const override;
+    virtual QAbstractSeries* create(shared_ptr<ChartData> data, QChart* ch) const override;
 };
 }
 

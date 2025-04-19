@@ -20,7 +20,7 @@ shared_ptr<ChartData> TimeValueDataParse::parseSql(const QSqlDatabase &db) const
     }
     QString tableName = tables.first();
 
-    shared_ptr<TimeValueData> ts;
+    shared_ptr<TimeValueData> ts = make_shared<TimeValueData>();
     QSqlRecord record = db.record(tableName);
 
     if(record.count() < 2) {
@@ -32,9 +32,6 @@ shared_ptr<ChartData> TimeValueDataParse::parseSql(const QSqlDatabase &db) const
                               .arg(col1, col2, tableName);
     QSqlQuery queryAllRecords(queryString);
 
-    int rowCount = getRowCount(tableName);
-
-    ts->data.reserve(rowCount);
     ts->xLabel = col1;
     ts->yLabel = col2;
 
@@ -57,7 +54,7 @@ shared_ptr<ChartData> TimeValueDataParse::parseJson(const QJsonDocument &doc) co
         throw QString("Invalid JSON format. Json document must be an object");
     }
 
-    shared_ptr<TimeValueData> ts;
+    shared_ptr<TimeValueData> ts = make_shared<TimeValueData>();
     QJsonObject rootObj = doc.object();
     QJsonArray jsonTimeSeries = getSeries(rootObj);
     setLabels(rootObj, ts);

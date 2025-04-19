@@ -1,4 +1,4 @@
-CONFIG += console c++11 combobox
+CONFIG += console c++11
 CONFIG -= app_bundle
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

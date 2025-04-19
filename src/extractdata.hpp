@@ -21,21 +21,13 @@ public:
 
 
 class JsonExtract : public ExtractData {
-protected:
-    bool isTimeRecord(const QJsonObject& tr) const;
-    void setLabels(const QJsonObject& obj, shared_ptr<ChartData>& ts) const;
-    QJsonArray getSeries(const QJsonObject& obj) const;
-    TimeRecord getTimeRecord(const QJsonValue& jsonValue) const;
-
 public:
     JsonExtract(shared_ptr<Parse> p) : ExtractData(p) {}
     virtual shared_ptr<ChartData> exec(const QFileInfo& file) const override;
 };
 
 class SqlExtract : public ExtractData {
-protected:
-    TimeRecord getTimeRecord(const QVariant& vDate, const QVariant& vValue) const;
-    int getRowCount(const QString& tableName) const;
+
 public:
     SqlExtract(shared_ptr<Parse> p) : ExtractData(p) {}
     virtual shared_ptr<ChartData> exec(const QFileInfo& file) const override;
