@@ -1,9 +1,14 @@
-CONFIG += console c++11
+CONFIG += console c++11 combobox
 CONFIG -= app_bundle
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QT += sql charts core gui
+
+QMAKE_CXXFLAGS_DEBUG -= -O1
+QMAKE_CXXFLAGS_DEBUG -= -O2
+QMAKE_CXXFLAGS_DEBUG -= -O3
+QMAKE_CXXFLAGS_DEBUG += -O0
 
 INCLUDEPATH += src/ \
     src/mycharts/ \
@@ -29,7 +34,8 @@ HEADERS += \
     src/widgets/win.hpp \
     src/mycharts/mychart.hpp \
     src/parse.hpp \
-    includes/ComboBox/seperatorcombobox.hpp
+    includes/ComboBox/seperatorcombobox.hpp \
+    includes/ioc_container.hpp
 
 DISTFILES += \
     README.md \

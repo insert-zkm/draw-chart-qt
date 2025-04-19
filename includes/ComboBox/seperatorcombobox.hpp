@@ -33,7 +33,7 @@ public:
     * Conctructor.
     * @param parent The parent widget.
     */
-    SeparatorComboBox( QWidget* parent );
+    SeparatorComboBox( QWidget* parent = nullptr );
 
     /**
     * Destructor.
