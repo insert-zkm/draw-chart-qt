@@ -2,9 +2,10 @@
 
 #include <QComboBox>
 #include <QGraphicsEffect>
+#include <QPdfWriter>
+#include <QFileDialog>
 
 #include "parse.hpp"
-#include "chartdata.hpp"
 #include "extractdata.hpp"
 #include "mychart.hpp"
 
@@ -12,25 +13,27 @@ ChartWidget::ChartWidget(QWidget *parent)
     : QWidget(parent)
 {
     container = unique_ptr<ioc::Container>(new ioc::Container());
+    emit printStatus(true);
 
     chartTypeCB = new SeparatorComboBox();
-    styleCB = new SeparatorComboBox();
+    grayScaleTogler = new QCheckBox("gray scale");
 
     QHBoxLayout *l2 = new QHBoxLayout();
     l2->addWidget(chartTypeCB);
-    l2->addWidget(styleCB);
+    l2->addWidget(grayScaleTogler);
 
     QVBoxLayout *l1 = new QVBoxLayout(this);
     l1->setContentsMargins(0, 0, 0, 0);
-    l2->setContentsMargins(10, 10, 10, 10);
+    l2->setContentsMargins(10, 10, 10, 0);
 
     ch = new QChart();
     cv = new QChartView(ch);
 
-    QGraphicsColorizeEffect *graphicsEffect = new QGraphicsColorizeEffect;
-    graphicsEffect->setColor(Qt::black);
-    graphicsEffect->setEnabled(false);
-    ch->setGraphicsEffect(graphicsEffect);
+    gce = new QGraphicsColorizeEffect;
+    gce->setColor(Qt::black);
+    gce->setEnabled(false);
+    ch->setGraphicsEffect(gce);
+    ch->setBackgroundRoundness(0);
 
     l1->addLayout(l2);
     l1->addWidget(cv);
@@ -39,8 +42,10 @@ ChartWidget::ChartWidget(QWidget *parent)
 
     QObject::connect(chartTypeCB, QOverload<int>::of(&QComboBox::activated),
             this, &ChartWidget::activatedChartType);
-    QObject::connect(styleCB, QOverload<int>::of(&QComboBox::activated),
-                     this, &ChartWidget::activatedChartTheme);
+    QObject::connect(chartTypeCB, QOverload<int>::of(&QComboBox::activated),
+                     this, &ChartWidget::reDrawChart);
+    QObject::connect(grayScaleTogler, &QCheckBox::stateChanged,
+                     this, &ChartWidget::activatedGrayScale);
 }
 
 void ChartWidget::fillComboBoxes() {
@@ -52,12 +57,9 @@ void ChartWidget::fillComboBoxes() {
     chartTypeCB->addChildItem("Line chart", ChartType::XYLine);
 
     chartTypeCB->setCurrentIndex(1);
+    data = make_shared<TimeValueData>();
     container->registerInstance<Parse, TimeValueDataParse>();
     container->registerInstance<MyCharts::Chart, MyCharts::TimeValueLine>();
-
-    styleCB->addItem("light", QChart::ChartThemeLight);
-    styleCB->addItem("dark", QChart::ChartThemeDark);
-    styleCB->addItem("HighContrast", QChart::ChartThemeHighContrast);
 }
 
 void ChartWidget::drawChart(const QFileInfo &fi) {
@@ -66,21 +68,49 @@ void ChartWidget::drawChart(const QFileInfo &fi) {
     shared_ptr<ExtractData> extractor = container->resolve<ExtractData>();
     shared_ptr<MyCharts::Chart> seriesCreator = container->resolve<MyCharts::Chart>();
 
-    shared_ptr<ChartData> data;
     try {
         data = extractor->exec(fi);
-    } catch(const exception& e) {
-        qDebug() << e.what();
+        emit printStatus(false);
     } catch(const QString& e) {
         QMessageBox::critical(this,
                               "Error",
                               e);
         clearChart();
+        data->clear();
+        emit printStatus(true);
         return;
     }
 
     clearChart();
-    QAbstractSeries* chartSeries = seriesCreator->create(data, ch);
+    seriesCreator->create(data, ch);
+}
+
+void ChartWidget::reDrawChart() {
+    if(!data.get() || data->isEmpty()) {
+        return;
+    }
+    shared_ptr<MyCharts::Chart> seriesCreator = container->resolve<MyCharts::Chart>();
+
+    clearChart();
+    emit printStatus(false);
+    seriesCreator->create(data, ch);
+}
+
+void ChartWidget::print(bool checked)
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save the file as PDF"),
+                                                    QDir::currentPath(),
+                                                    tr("(PDF Files)*.pdf"));
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+    QPdfWriter writer(fileName);
+    writer.setPageSize(QPagedPaintDevice::A4);
+    QPainter painter(&writer);
+    cv->render(&painter);
+    painter.end();
 }
 
 void ChartWidget::activatedChartType(int index) {
@@ -88,10 +118,8 @@ void ChartWidget::activatedChartType(int index) {
     changeContainerChartType(type);
 }
 
-void ChartWidget::activatedChartTheme(int index)  {
-//    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(chartTypeCB->itemData(index).toInt());
-//    cv->chart()->setTheme(theme);
-    cv->chart()->graphicsEffect()->setEnabled(true);
+void ChartWidget::activatedGrayScale(int state)  {
+    gce->setEnabled(Qt::Checked == state);
 }
 
 void ChartWidget::changeContainerChartType(const ChartType& chtype) {

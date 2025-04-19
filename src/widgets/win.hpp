@@ -16,9 +16,12 @@ class Win : public QMainWindow
 public:
     Win();
 
+public slots:
+    void printDisable(bool status);
 protected:
     void createMenus();
     void createActions();
+    void appStyle();
 
 protected:
     FileSystemWidget* fs;

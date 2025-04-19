@@ -1,5 +1,6 @@
 #include "filesystemwidget.hpp"
 #include "includes/filetablemodel.hpp"
+#include "qpdfwriter.h"
 
 #include <QLabel>
 
@@ -10,6 +11,7 @@
 #include <QHeaderView>
 #include <QAbstractItemView>
 #include <QHeaderView>
+#include <QMessageBox>
 
 QStringList filesFilter = {"*.sqlite", "*.json"};
 
@@ -44,11 +46,18 @@ void FileSystemWidget::open()
         QDir::homePath(),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
+    if(dirPath.isEmpty()) {
+        return;
+    }
     QDir dir(dirPath);
     dir.setNameFilters(filesFilter);
+
     if(dir.isEmpty()) {
-        // FIXME message box
+        QMessageBox::information(this,
+                                 "Выбрана пустая папка",
+                                 "Вернуться?");
     }
+
     fileModel->newFiles(dir);
 }
 

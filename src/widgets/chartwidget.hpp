@@ -5,11 +5,13 @@
 #include <QObject>
 #include <QFileInfo>
 #include <QtCharts>
+#include <QCheckBox>
 
 #include <memory>
 
 #include "includes/ComboBox/seperatorcombobox.hpp"
 #include "includes/ioc_container.hpp"
+#include "chartdata.hpp"
 
 
 enum ChartType {
@@ -36,7 +38,14 @@ public slots:
 
     void activatedChartType(int index);
 
-    void activatedChartTheme(int index);
+    void activatedGrayScale(int index);
+
+    void reDrawChart();
+
+    void print(bool checked = false);
+
+signals:
+    void printStatus(bool status);
 
 protected:
     void changeContainerChartType(const ChartType &chtype);
@@ -46,10 +55,12 @@ protected:
 protected:
     QChart* ch;
     QChartView* cv;
+    QGraphicsColorizeEffect* gce;
 
+    QCheckBox* grayScaleTogler;
     SeparatorComboBox* chartTypeCB;
-    SeparatorComboBox* styleCB;
     unique_ptr<ioc::Container> container;
+    shared_ptr<ChartData> data;
     void clearChart();
 };
 

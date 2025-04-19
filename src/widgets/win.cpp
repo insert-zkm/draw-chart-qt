@@ -14,7 +14,8 @@
 #include <QSizePolicy>
 #include <QDebug>
 #include <QFileDialog>
-
+#include <QSplitter>
+#include <QSplitterHandle>
 
 Win::Win()
 {
@@ -22,29 +23,29 @@ Win::Win()
     setCentralWidget(widget);
 
     setMinimumSize(160, 160);
-    this->resize(600, 600);
+    this->resize(700, 350);
 
     fs = new FileSystemWidget();
     ch = new ChartWidget();
 
-    QVBoxLayout *leftLayout = new QVBoxLayout();
-    leftLayout->addWidget(fs);
+    QVBoxLayout *rootLayout = new QVBoxLayout();
 
-    QVBoxLayout *rightLayout = new QVBoxLayout();
-    rightLayout->addWidget(ch);
+    QSplitter* splitter = new QSplitter();
+    rootLayout->addWidget(splitter);
 
-    QHBoxLayout *rootLayout = new QHBoxLayout();
-    rootLayout->addLayout(leftLayout);
-    rootLayout->addLayout(rightLayout);
+    splitter->addWidget(fs);
+    splitter->addWidget(ch);
+    splitter->setStretchFactor(1, 20);
 
     widget->setLayout(rootLayout);
-
     statusBar()->showMessage("Выберите папку для начала работы");
 
     createActions();
     createMenus();
+    appStyle();
 
     connect(fs, &FileSystemWidget::selectedFile, ch, &ChartWidget::drawChart);
+    connect(ch, &ChartWidget::printStatus, this, &Win::printDisable);
 }
 
 
@@ -53,6 +54,7 @@ void Win::createMenus()
     fileMenu = menuBar()->addMenu(tr("&File"));
 
     fileMenu->addAction(openAct);
+    fileMenu->addAction(printAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 }
@@ -66,12 +68,32 @@ void Win::createActions()
 
     printAct = new QAction("Печать...", this);
     printAct->setShortcuts(QKeySequence::Print);
-    printAct->setStatusTip("Открыть существующую папку");
-//    connect(printAct, &QAction::triggered, fs, &FileSystemWidget::open); TODO
+    printAct->setDisabled(true);
+    printAct->setStatusTip("Печать в PDF");
+    connect(printAct, &QAction::triggered, ch, &ChartWidget::print);
 
     exitAct = new QAction("Выход", this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip("ВЫйти из приложения");
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
+}
+
+void Win::printDisable(bool status) {
+    printAct->setDisabled(status);
+}
+
+void Win::appStyle()
+{
+    this->setStyleSheet(R"(
+        QTableView {
+            border: none;
+        }
+        QChart {
+            border: none;
+            border-radius: 0px;
+        }
+        QSplitter::handle{
+            background-color: rgba(108, 122, 137, 20%);
+        })");
 }
 
