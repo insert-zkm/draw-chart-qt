@@ -7,6 +7,7 @@
 #include <QValueAxis>
 #include <QDebug>
 #include <QBarCategoryAxis>
+#include <QScatterSeries>
 
 
 #include <memory>
@@ -90,5 +91,11 @@ QAbstractSeries* MyCharts::TimeValueHistogram::create(shared_ptr<ChartData> data
     series->attachAxis(freqAxis);
     series->attachAxis(dateAxis);
 
+    return series;
+}
+
+QAbstractSeries *MyCharts::XYScatter::create(shared_ptr<ChartData> data, QChart *ch) const
+{
+    QScatterSeries* series;
     return series;
 }
