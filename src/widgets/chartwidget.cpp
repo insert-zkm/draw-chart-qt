@@ -52,7 +52,6 @@ void ChartWidget::fillComboBoxes() {
     chartTypeCB->addParentItem("Time Series");
     chartTypeCB->addChildItem("Line chart", ChartType::TimeValueLine);
     chartTypeCB->addChildItem("Histogram chart", ChartType::TimeValueHistogram);
-    chartTypeCB->addSeparator();
     chartTypeCB->addParentItem("XY Series");
     chartTypeCB->addChildItem("Line chart", ChartType::XYLine);
 
@@ -60,6 +59,15 @@ void ChartWidget::fillComboBoxes() {
     data = make_shared<TimeValueData>();
     container->registerInstance<Parse, TimeValueDataParse>();
     container->registerInstance<MyCharts::Chart, MyCharts::TimeValueLine>();
+
+
+    {
+        // hack to disable combo box item
+        QModelIndex idx = chartTypeCB->model()->index(4, 0);
+
+        QVariant v(0);
+        chartTypeCB->model()->setData(idx, v, Qt::UserRole -1);
+    }
 }
 
 void ChartWidget::drawChart(const QFileInfo &fi) {
