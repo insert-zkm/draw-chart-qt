@@ -12,7 +12,7 @@
 
 #include <memory>
 
-QAbstractSeries* MyCharts::TimeValueLine::create(shared_ptr<ChartData> data, QChart* ch) const
+void MyCharts::TimeValueLine::create(shared_ptr<ChartData> data, QChart* ch) const
 {
     QLineSeries* series = new QLineSeries();
     shared_ptr<TimeValueData> d = dynamic_pointer_cast<TimeValueData>(data);
@@ -37,12 +37,9 @@ QAbstractSeries* MyCharts::TimeValueLine::create(shared_ptr<ChartData> data, QCh
     ch->addAxis(valAxis, Qt::AlignLeft);
     series->attachAxis(dtAxis);
     series->attachAxis(valAxis);
-
-
-    return series;
 }
 
-QAbstractSeries* MyCharts::TimeValueHistogram::create(shared_ptr<ChartData> data, QChart* ch) const
+void MyCharts::TimeValueHistogram::create(shared_ptr<ChartData> data, QChart* ch) const
 {
     const int barCount = 10;
     QBarSeries* series = new QBarSeries();
@@ -90,12 +87,9 @@ QAbstractSeries* MyCharts::TimeValueHistogram::create(shared_ptr<ChartData> data
     ch->addAxis(dateAxis, Qt::AlignBottom);
     series->attachAxis(freqAxis);
     series->attachAxis(dateAxis);
-
-    return series;
 }
 
-QAbstractSeries *MyCharts::XYScatter::create(shared_ptr<ChartData> data, QChart *ch) const
+void MyCharts::XYScatter::create(shared_ptr<ChartData> data, QChart *ch) const
 {
-    QScatterSeries* series;
-    return series;
+    // FEATURE
 }
