@@ -22,8 +22,6 @@ FileSystemWidget::FileSystemWidget()
 
     fileModel = new FileTableModel(this);
 
-    fileModel->newFiles(QDir("../draw-chart-qt/test/data/"));
-
     tv = new QTableView();
     tv->setModel(fileModel);
     tv->verticalHeader()->hide();

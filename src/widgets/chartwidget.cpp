@@ -13,7 +13,6 @@ ChartWidget::ChartWidget(QWidget *parent)
     : QWidget(parent)
 {
     container = unique_ptr<ioc::Container>(new ioc::Container());
-    emit printStatus(true);
 
     chartTypeCB = new SeparatorComboBox();
     grayScaleTogler = new QCheckBox("gray scale");
@@ -32,6 +31,7 @@ ChartWidget::ChartWidget(QWidget *parent)
     gce = new QGraphicsColorizeEffect;
     gce->setColor(Qt::black);
     gce->setEnabled(false);
+
     ch->setGraphicsEffect(gce);
     ch->setBackgroundRoundness(0);
 
