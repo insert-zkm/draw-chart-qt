@@ -20,10 +20,12 @@ FileSystemWidget::FileSystemWidget()
     QVBoxLayout *l1 = new QVBoxLayout(this);
     l1->addWidget(new QLabel("Выбор файла с данными"));
 
-    fileModel = new FileTableModel(this);
+    fileModel = new QFileSystemModel(this);
+    fileModel->setNameFilters(filesFilter);
 
     tv = new QTableView();
     tv->setModel(fileModel);
+    tv->setRootIndex(fileModel->index(QDir::currentPath()));
     tv->verticalHeader()->hide();
     QHeaderView *headerView = tv->horizontalHeader();
     headerView->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -56,9 +58,10 @@ void FileSystemWidget::open()
                                  "Вернуться?");
     }
 
-    fileModel->newFiles(dir);
+    fileModel->setRootPath(dir.absolutePath());
+    tv->setRootIndex(fileModel->index(dir.absolutePath()));
 }
 
 void FileSystemWidget::modelItemActivated(const QModelIndex& current) const {
-    emit selectedFile(fileModel->fileInfo(current.row()));
+    emit selectedFile(fileModel->fileInfo(current));
 }

@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QBarCategoryAxis>
 #include <QScatterSeries>
+#include <QPieSeries>
 
 
 #include <memory>
@@ -92,4 +93,40 @@ void MyCharts::TimeValueHistogram::create(shared_ptr<ChartData> data, QChart* ch
 void MyCharts::XYScatter::create(shared_ptr<ChartData> data, QChart *ch) const
 {
     // FEATURE
+}
+
+void MyCharts::TimeValuePie::create(shared_ptr<ChartData> data, QChart *ch) const
+{
+    QPieSeries* series = new QPieSeries();
+
+    shared_ptr<TimeValueData> d = dynamic_pointer_cast<TimeValueData>(data);
+    if(nullptr == d) {
+        throw QString("Passed wrong derived class of ChartData");
+    }
+    d->sort();
+
+    QDateTime minVal, maxVal;
+    if(!d->data.isEmpty()) {
+        minVal = d->data[0].first;
+        maxVal = d->data[0].first;
+        if(d->data.size() >= 2) {
+            maxVal = d->data.last().first;
+        }
+    }
+
+    QDateTime border = minVal.addYears(1);
+    QStringList months;
+
+    QPieSlice* slice = new QPieSlice();
+    for(int i = 0; i < d->data.size();) {
+        int count = 0;
+        months << QString::number(i + 1);
+        for(;i < d->data.size() && d->data[i].first < border; i++) {
+            count += 1;
+        }
+
+        series->append(QString::number(border.date().year()), count);
+        border = border.addYears(1);
+    }
+    ch->addSeries(series);
 }

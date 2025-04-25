@@ -52,6 +52,7 @@ void ChartWidget::fillComboBoxes() {
     chartTypeCB->addParentItem("Time Series");
     chartTypeCB->addChildItem("Line chart", ChartType::TimeValueLine);
     chartTypeCB->addChildItem("Histogram chart", ChartType::TimeValueHistogram);
+    chartTypeCB->addChildItem("Pie chart", ChartType::TimeValuePie);
     chartTypeCB->addParentItem("XY Series");
     chartTypeCB->addChildItem("Line chart", ChartType::XYLine);
 
@@ -137,6 +138,8 @@ void ChartWidget::changeContainerChartType(const ChartType& chtype) {
             container->registerInstance<MyCharts::Chart, MyCharts::TimeValueLine>();
         } else if (ChartType::TimeValueHistogram == chtype) {
             container->registerInstance<MyCharts::Chart, MyCharts::TimeValueHistogram>();
+        } else if (ChartType::TimeValuePie == chtype) {
+            container->registerInstance<MyCharts::Chart, MyCharts::TimeValuePie>();
         } else {
             qWarning() << "ChartType is not registered under ChartType::TimeValueMask";
         }

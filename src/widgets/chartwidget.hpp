@@ -17,6 +17,7 @@
 enum ChartType {
     TimeValueLine       = 0x00001,
     TimeValueHistogram  = 0x00002,
+    TimeValuePie  = 0x00003,
     TimeValueMask       = 0x0000f,
 
     XYLine              = 0x00010,

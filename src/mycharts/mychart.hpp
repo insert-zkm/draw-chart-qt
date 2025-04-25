@@ -38,6 +38,12 @@ public:
     virtual void create(shared_ptr<ChartData> data, QChart* ch) const override;
 };
 
+class TimeValuePie : public TimeValueChart
+{
+public:
+    virtual void create(shared_ptr<ChartData> data, QChart* ch) const override;
+};
+
 class XYChart : public Chart
 {
 public:

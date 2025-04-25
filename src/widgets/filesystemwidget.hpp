@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QTableView>
+#include <QFileSystemModel>
 
 #include "includes/filetablemodel.hpp"
 
@@ -19,7 +20,7 @@ public slots:
     void modelItemActivated(const QModelIndex& current) const;
 
 protected:
-    FileTableModel* fileModel;
+    QFileSystemModel* fileModel;
     QTableView* tv;
 };
 
