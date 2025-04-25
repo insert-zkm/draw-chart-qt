@@ -28,8 +28,8 @@ FileSystemWidget::FileSystemWidget()
     tv->setRootIndex(fileModel->index(QDir::currentPath()));
     tv->verticalHeader()->hide();
     QHeaderView *headerView = tv->horizontalHeader();
+    tv->hideColumn(fileModel->columnCount() - 1);
     headerView->setSectionResizeMode(0, QHeaderView::Stretch);
-    headerView->setSectionResizeMode(1, QHeaderView::Interactive);
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
 
